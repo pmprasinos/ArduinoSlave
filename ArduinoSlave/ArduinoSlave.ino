@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 #include <Wire.h>
 
 #include <Adafruit_GFX.h>
@@ -55,7 +57,7 @@ uint8_t bmpDepth, bmpImageoffset;
 
 
 
-char ScreenState = 0;
+int ScreenState = 0;
 ///////////////////Inputs//////////////////////////
 
 
@@ -76,7 +78,7 @@ void setup()
     tft.begin();
   
     tft.fillScreen(BLACK);
-    delay(500);
+    
     if (!SD.begin(SD_CS))   // Check SD Card
       { 
           tft.setCursor(30, 60);
@@ -102,10 +104,13 @@ void setup()
 
 void loop()
   {
-    delay(1);
+    
+    
      unsigned long currenttime=millis(); 
-    char btc = Wire.read();
-    Icon(btc);
+    int btc = Wire.read();
+   ScreenState = btc;
+    if (btc > 1 ) Icon(btc);
+
    if (currenttime-lasttime >= 300000){
         lasttime=currenttime;    
         Battery();
@@ -113,13 +118,18 @@ void loop()
       
   }
 
-void Icon(char btc)
+void Icon(int btc)
  {  
 
   
-  
 
   
+
+   if(btc<=1) 
+   {
+    return NULL;
+   }
+  Serial.println(btc);
   ScreenState = btc;
 
   int myWidth = tft.width();
@@ -130,11 +140,19 @@ void Icon(char btc)
 
         switch (ScreenState)   // Actions to be done when message recieved from Beckoff
           {
-              case '0':
-                
+              case 0:
               break;
-        
-              case '1':
+
+              case 255:
+              break;
+
+              case 1:
+              break;
+
+         case 39:
+             break;
+             
+              case 49:
                
                     tft.fillScreen(BLACK);
                     bmpDraw("height.bmp", 33, 25);
@@ -150,7 +168,7 @@ void Icon(char btc)
               
  
         
-              case '2':
+              case 50:
                
                 tft.fillScreen(BLACK);
                 bmpDraw("home.bmp", 36, 25);
@@ -163,7 +181,7 @@ void Icon(char btc)
                 break;
                
               
-              case '3':
+              case 51:
                 tft.fillScreen(BLACK);
                 bmpDraw("error.bmp", 36, 25);
                 tft.setCursor(53, 3);
@@ -174,7 +192,7 @@ void Icon(char btc)
                  RenderBattery(voltage);
               break;
               
-              case '4':
+              case 52:
                 tft.fillScreen(BLACK);
                 bmpDraw("path.bmp", 33, 25);
                 tft.setCursor(36, 3);
@@ -185,7 +203,7 @@ void Icon(char btc)
                  RenderBattery(voltage);
               break;
               
-              case '5':
+              case 53:
                 tft.fillScreen(BLACK);
                 bmpDraw("reset.bmp", 33, 25);
                 tft.setCursor(32, 3);
@@ -196,7 +214,7 @@ void Icon(char btc)
                 RenderBattery(voltage);
               break;
             
-              case '6':
+              case 54:
                 tft.fillScreen(BLACK);
                 bmpDraw("shortcut.bmp", 36, 25);
                 tft.setCursor(25, 3);
@@ -207,7 +225,7 @@ void Icon(char btc)
                 RenderBattery(voltage);
               break;
             
-              case '7':
+              case 55:
                 tft.fillScreen(BLACK);
                 bmpDraw("storage.bmp", 36, 25);
                 tft.setCursor(25, 0);
@@ -219,7 +237,7 @@ void Icon(char btc)
               break;
       
       
-              case '8':
+              case 56:
                 tft.fillScreen(BLACK);                
                 tft.setCursor(30, 03);
                 tft.setTextColor(BLUE);  
@@ -246,50 +264,50 @@ void Icon(char btc)
                 RenderBattery(voltage);
               break;
               
-              case 'A':
+              case 65:
              
                 tft.fillCircle(33,113, 5,RED);
                 tft.fillCircle(120,113,5,RED);
                     
               break;
              
-              case 'B':
+              case 66:
               
                 tft.fillCircle(33,113, 5,GREEN);
                 tft.fillCircle(120,113,5,GREEN);
                     
               break;
               
-              case 'C':
+              case 67:
            
                 tft.fillCircle(33,113, 5,GREEN);
                 tft.fillCircle(120,113,5,RED);
                     
               break;
              
-              case 'D':
+              case 68:
            
                 tft.fillCircle(33,113, 5,RED);
                 tft.fillCircle(120,113,5,GREEN);
                     
               break;
               
-              case 'E':      //grey circle
+              case 69:      //grey circle
             
                 tft.fillCircle(120,9, 5,0x7777);
               break;
               
-              case 'F':     //blue circle 
+              case 70:     //blue circle 
              
                 tft.fillCircle(120,9, 5,BLUE);
               break;
 
-              case 'G':     //bluetooth on 
+              case 71:     //bluetooth on 
                 
                   
               break;
 
-              case 'H':     //bluetooth off 
+              case 72:     //bluetooth off 
                 
                 tft.fillScreen(BLACK);
                 bmpDraw("blue.bmp", 36, 25);
@@ -301,18 +319,14 @@ void Icon(char btc)
                 RenderBattery(voltage);
               break;
 
-              
-              
-             
-             
             
-             case '9':
-             break;
              
             default:
+            
+
             break;
-          
-           
+           Serial.println(ScreenState);
+           ScreenState = 0;
     }
  }
 
@@ -491,34 +505,37 @@ int getBandgap(void) // Returns actual value of Vcc (x 100)
      // For 168/328 boards
      const long InternalReferenceVoltage = 1306L;  // Adjust this value to your boards specific internal BG voltage x1000 //updated 5/9/2017 to reflect current board
         // REFS1 REFS0          --> 0 1, AVcc internal ref. -Selects AVcc external reference
-        // MUX3 MUX2 MUX1 MUX0  --> 1110 1.1V (VBG)         -Selects channel 14, bandgap voltage, to measure
-     ADMUX = (0<<REFS1) | (1<<REFS0) | (0<<ADLAR) | (1<<MUX3) | (1<<MUX2) | (1<<MUX1) | (0<<MUX0);
-       
+         //MUX3 MUX2 MUX1 MUX0  --> 1110 1.1V (VBG)         -Selects channel 14, bandgap voltage, to measure
+     ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+//  #endif  
 
-    delay(50);  // Let mux settle a little to get a more stable A/D conversion
-        // Start a conversion  
-     ADCSRA |= _BV( ADSC );
-        // Wait for it to complete
-     while( ( (ADCSRA & (1<<ADSC)) != 0 ) );
-        // Scale the value
-     int results = (((InternalReferenceVoltage  *  1024L) / ADC) + 5L) / 10L; // calculates for straight line value 
-     
-     return results;
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Start conversion
+  while (bit_is_set(ADCSRA,ADSC)); // measuring
+
+  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH  
+  uint8_t high = ADCH; // unlocks both
+
+  long result = (high<<8) | low;
+
+  result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+  return result;
 }
 
 void Battery(void)
   {
-   voltage=getBandgap();
-   RenderBattery(voltage);
-   Serial.print("VOLTAGE: ");
-   Serial.println(voltage);
+  voltage=10000;
+   //RenderBattery(voltage);
+   //Serial.print("VOLTAGE: ");
+   //Serial.println(voltage);
   }
 
 void RenderBattery(int voltage)
 {
     int x=0;
    int y=0;
-
+   
+        tft.fillRect(14    ,0      , 20 , 5  , BLACK);
         tft.fillRect(x    ,y      , 10 , 19  , BLACK);
   
         tft.fillRect(x+2  ,y+15   , 6  , 4  , RED);
@@ -526,7 +543,7 @@ void RenderBattery(int voltage)
         tft.fillRect(x+2  ,y+5    , 6  , 4  , GREEN);
        
        
-       if(voltage < 3120)
+       if(voltage < 385)
        {
           tft.fillRect(x+2, y+4, 6,  (( 3120 - voltage)/12), BLACK);
        }
@@ -549,7 +566,7 @@ void RenderBattery(int voltage)
        tft.drawLine((x+0),(y+20),(x+0),(y+4),BLUE);
 
 
-      tft.fillRect(14    ,0      , 30 , 5  , BLACK);
+      
         tft.setCursor(14, 0);
                 tft.setTextColor(BLUE);  
                 tft.setTextSize(1);
