@@ -102,7 +102,7 @@ void setup()
 
 void loop()
   {
-    delay(5);
+    delay(1);
      unsigned long currenttime=millis(); 
     char btc = Wire.read();
     Icon(btc);
@@ -489,7 +489,7 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
 int getBandgap(void) // Returns actual value of Vcc (x 100)
     {
      // For 168/328 boards
-     const long InternalReferenceVoltage = 1060L;  // Adjust this value to your boards specific internal BG voltage x1000
+     const long InternalReferenceVoltage = 1306L;  // Adjust this value to your boards specific internal BG voltage x1000 //updated 5/9/2017 to reflect current board
         // REFS1 REFS0          --> 0 1, AVcc internal ref. -Selects AVcc external reference
         // MUX3 MUX2 MUX1 MUX0  --> 1110 1.1V (VBG)         -Selects channel 14, bandgap voltage, to measure
      ADMUX = (0<<REFS1) | (1<<REFS0) | (0<<ADLAR) | (1<<MUX3) | (1<<MUX2) | (1<<MUX1) | (0<<MUX0);
@@ -501,7 +501,7 @@ int getBandgap(void) // Returns actual value of Vcc (x 100)
         // Wait for it to complete
      while( ( (ADCSRA & (1<<ADSC)) != 0 ) );
         // Scale the value
-     int results = (((InternalReferenceVoltage * 10 *  1024L) / ADC) + 5L) / 10L; // calculates for straight line value 
+     int results = (((InternalReferenceVoltage  *  1024L) / ADC) + 5L) / 10L; // calculates for straight line value 
      
      return results;
 }
@@ -520,6 +520,7 @@ void RenderBattery(int voltage)
    int y=0;
 
         tft.fillRect(x    ,y      , 10 , 19  , BLACK);
+  
         tft.fillRect(x+2  ,y+15   , 6  , 4  , RED);
         tft.fillRect(x+2  ,y+10   , 6  , 4  , YELLOW);
         tft.fillRect(x+2  ,y+5    , 6  , 4  , GREEN);
@@ -547,6 +548,8 @@ void RenderBattery(int voltage)
    
        tft.drawLine((x+0),(y+20),(x+0),(y+4),BLUE);
 
+
+      tft.fillRect(14    ,0      , 30 , 5  , BLACK);
         tft.setCursor(14, 0);
                 tft.setTextColor(BLUE);  
                 tft.setTextSize(1);
