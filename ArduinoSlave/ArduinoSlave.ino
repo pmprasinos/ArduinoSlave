@@ -139,7 +139,9 @@ void Icon(int numBytes)
 
     int myWidth = tft.width();
     int myHeight = tft.height();
-    
+
+     int xOffset = 0;
+    int yOffset = -10;
     
     switch (ScreenState)   // Actions to be done when message recieved from Beckoff
     {
@@ -312,39 +314,61 @@ void Icon(int numBytes)
       case 73: //targeting Mode
          if(targetMode == false)  
          {
-          tft.fillScreen(BLACK);
-          tft.drawCircle(64, 74, 32, BLUE);
-          tft.drawCircle(64, 74, 33, BLUE);
-           tft.setCursor(30, 03);
+          tft.fillRect(10, 10, 105, 105, BLACK);
+          tft.drawCircle(64 + xOffset, 74 + yOffset , 32, BLUE);
+          tft.drawCircle(64 + xOffset, 74 + yOffset , 33, BLUE);
+           tft.setCursor(32 , 3  );
            tft.setTextColor(BLUE);
           tft.setTextSize(1);
           tft.println("Target Mode");
+          RenderBattery(1153);
          }
-          tft.fillRect(64, 89, 2, 18, BLACK); //horizontal
-         tft.fillRect(64, 42, 2, 18, BLACK);
-         tft.fillRect(79, 74, 18, 2, BLACK); //vertical
-         tft.fillRect(32, 74, 18, 2, BLACK);
+          tft.fillRect(64 + xOffset, 89 + yOffset , 2, 18, BLACK); //horizontal
+         tft.fillRect(64 + xOffset, 42 + yOffset , 2, 18, BLACK);
+         tft.fillRect(79 + xOffset, 74 + yOffset , 18, 2, BLACK); //vertical
+         tft.fillRect(32 + xOffset, 74 + yOffset , 18, 2, BLACK);
          
          
-         tft.fillRect(64, 107, 2, 15, BLUE);
-         tft.fillRect(64, 26, 2, 15, BLUE);
-         tft.fillRect(97, 74, 15, 2, BLUE);
-         tft.fillRect(16, 74, 15, 2, BLUE);
-         tft.fillCircle(64, 74, 7, BLACK);
+         tft.fillRect(64 + xOffset, 107 + yOffset , 2, 15, BLUE);
+         tft.fillRect(64 + xOffset, 26 + yOffset , 2, 15, BLUE);
+         tft.fillRect(97 + xOffset, 74 + yOffset , 15, 2, BLUE);
+         tft.fillRect(16 + xOffset, 74 + yOffset , 15, 2, BLUE);
+         tft.fillCircle(64 + xOffset, 74 + yOffset , 7, BLACK);
+                   tft.setTextColor(BLACK);
+          tft.setTextSize(1);
+           tft.setCursor(8, 118 );
+           tft.print("Hold MD for Shadow" );
          targetMode = true;
          break;
 
       case 74:
-          tft.fillRect(64, 107, 2, 15, BLACK);
-         tft.fillRect(64, 26, 2, 15, BLACK);
-         tft.fillRect(97, 74, 15, 2, BLACK);
-         tft.fillRect(16, 74, 15, 2, BLACK);
+       if(targetMode == false)  
+         {
+          tft.fillScreen(BLACK);
+          tft.drawCircle(64 + xOffset, 74 + yOffset , 32, BLUE);
+          tft.drawCircle(64 + xOffset, 74 + yOffset , 33, BLUE);
+           tft.setCursor(32 , 3  );
+           tft.setTextColor(BLUE);
+          tft.setTextSize(1);
+          tft.println("Target Mode");
+          targetMode = true;
+          RenderBattery(1153);
+         }
+          tft.fillRect(64 + xOffset, 107 + yOffset , 2, 15, BLACK);
+         tft.fillRect(64 + xOffset, 26 + yOffset , 2, 15, BLACK);
+         tft.fillRect(98 + xOffset, 74 + yOffset , 14, 2, BLACK);
+         tft.fillRect(16 + xOffset, 74 + yOffset , 15, 2, BLACK);
          
-         tft.fillRect(64, 89, 2, 18, BLUE); //horizontal
-         tft.fillRect(64, 42, 2, 18, BLUE);
-         tft.fillRect(79, 74, 18, 2, BLUE); //vertical
-         tft.fillRect(32, 74, 18, 2, BLUE);
-         tft.fillCircle(64, 74, 7, GREEN);
+         tft.fillRect(64 + xOffset, 89 + yOffset , 2, 18, BLUE); //horizontal
+         tft.fillRect(64 + xOffset, 42 + yOffset , 2, 18, BLUE);
+         tft.fillRect(79 + xOffset, 74 + yOffset , 18, 2, BLUE); //vertical
+         tft.fillRect(32 + xOffset, 74 + yOffset , 18, 2, BLUE);
+         tft.fillCircle(64 + xOffset, 74 + yOffset , 7, GREEN);
+         
+          tft.setTextColor(BLUE);
+          tft.setTextSize(1);
+           tft.setCursor(8, 118 );
+           tft.print("Hold MD for Shadow" );
          break;
 
       case 75:
@@ -371,11 +395,6 @@ void Icon(int numBytes)
          break;
          
       default:
-       //   tft.fillRect(64, 80, 2, 20, BLUE); //horizontal
-       //  tft.fillRect(64, 28, 2, 20, BLUE);
-       //  tft.fillRect(80, 64, 20, 2, BLUE); //vertical
-       //  tft.fillRect(28, 64, 20, 2, BLUE);
-       //  tft.fillCircle(64, 64, 10, GREEN);
 
         break;
         if (debug) Serial.println(ScreenState);
@@ -389,25 +408,31 @@ void Icon(int numBytes)
 void removeTarget(char num)
 {
   targetMode = false;
-      tft.fillCircle(64, 74, 7, BLACK);
-       tft.drawCircle(64, 74, 32, BLACK);
-          tft.drawCircle(64, 74, 33, BLACK);
-           tft.setCursor(30, 03);
+      tft.fillCircle(64, 74-10, 7, BLACK);
+       tft.drawCircle(64, 74-10, 32, BLACK);
+          tft.drawCircle(64, 74-10, 33, BLACK);
+           tft.setCursor(32, 3);
            tft.setTextColor(BLACK);
           tft.setTextSize(1);
           tft.print("Target Mode");
+           tft.setCursor(8, 118 );
+           tft.print("Hold MD for Shadow" );
              tft.setTextColor(BLUE);
            tft.setCursor(27, 03);
-           tft.print("Shadow Active");
-               tft.fillRect(64, 89, 2, 18, BLACK); //horizontal
-         tft.fillRect(64, 42, 2, 18, BLACK);
-         tft.fillRect(79, 74, 18, 2, BLACK); //vertical
-         tft.fillRect(32, 74, 18, 2, BLACK);
-          tft.setCursor(59, 39);
+           tft.println("Shadow Active");
+           tft.setCursor(8, 120);
+           tft.print("Hold TR+MD to exit" );
+           
+               tft.fillRect(64, 89-10, 2, 18, BLACK); //horizontal
+         tft.fillRect(64, 42-10, 2, 18, BLACK);
+         tft.fillRect(79, 74-10, 18, 2, BLACK); //vertical
+         tft.fillRect(32, 74-10, 18, 2, BLACK);
+          tft.setCursor(59, 34);
           tft.setTextColor(GREEN);
           tft.setTextSize(2);
           tft.print(num);
-           bmpDraw("shadow.bmp", 28, 25);
+           bmpDraw("shadow.bmp", 28, 18);
+           RenderBattery(1153);
 }
 
 /////////////////////////////BitMap Drawing Fucntion///////////////////////
@@ -615,7 +640,7 @@ void RenderBattery(int voltage)
   int x = 0;
   int y = 0;
 
-  tft.fillRect(14    , 0      , 20 , 5  , BLACK);
+ // tft.fillRect(14    , 0      , 20 , 5  , BLACK);
   tft.fillRect(x    , y      , 10 , 19  , BLACK);
 
   tft.fillRect(x + 2  , y + 15   , 6  , 4  , RED);
