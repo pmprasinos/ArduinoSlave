@@ -8,7 +8,7 @@
 #include <SPI.h>
 //#include <Fonts/FreeMonoBoldOblique12pt7b.h>
 ///////////////////OLED Things////////////////////////
-
+#define volts 7
 #define sclk 13
 #define mosi 11
 #define dc   A1
@@ -62,12 +62,12 @@ int ScreenState = 0;
 bool runthistime = false;
 
 int loopcount;
-bool debug = true;
+bool debug = false;
 
 void setup()
 {
-
-  if (debug) Serial.begin(9600);
+pinMode(volts, INPUT);
+  Serial.begin(9600);
   Wire.begin(1);
   Wire.onReceive(Icon);
   pinMode(cs, OUTPUT);
@@ -89,27 +89,27 @@ void setup()
   tft.setRotation(2);    // Sets the rotation of the Bitmap images 0,1,2,3,4
 
   
-    
+    Battery();
   bmpDraw("blue.bmp", 36, 25);
  tft.setCursor(29, 90);
   tft.setTextColor(BLUE);
   tft.setTextSize(1);
   tft.println("No Connection");
-
+  RenderBattery(voltage);
   ScreenState = 72;
-  Battery();
+
 }
 
 
 void loop()
 {
-
+  //Battery();
   //Serial.print(loopcount);
   loopcount++;
   unsigned long currenttime = millis();
   delay(1);
 
-  if (currenttime - lasttime >= 300000)
+  if (currenttime - lasttime >= 600000)
   {
     lasttime = currenttime;
     Battery();
@@ -149,32 +149,7 @@ void Icon(int numBytes)
       case 39:
         break;
 
-      case 49:
-
-        tft.fillScreen(BLACK);
-        bmpDraw("height.bmp", 33, 25);
-        tft.setCursor(30, 03);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1.85);
-        tft.println("Height Mode");
-
-        RenderBattery(voltage);
-
-        break;
-
-      case 50:
-         targetMode = false;
-        tft.fillScreen(BLACK);
-        bmpDraw("home.bmp", 36, 25);
-        tft.setCursor(30, 03);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1);
-        tft.println("Homing Mode");
-
-        RenderBattery(voltage);
-        break;
-
-
+   
       case 51:
          targetMode = false;
         tft.fillScreen(BLACK);
@@ -182,43 +157,13 @@ void Icon(int numBytes)
         tft.setCursor(53, 3);
         tft.setTextColor(BLUE);
         tft.setTextSize(1);
-        tft.println("Error");
+        tft.println("Fault");
+         tft.setCursor(10, 105);
+        tft.println("Hold Sync to Reset");
 
         RenderBattery(voltage);
         break;
 
-      case 52:
-         targetMode = false;
-        tft.fillScreen(BLACK);
-        bmpDraw("path.bmp", 33, 25);
-        tft.setCursor(36, 3);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1.85);
-        tft.println("Path Mode");
-        RenderBattery(voltage);
-        break;
-
-      case 53:
-        tft.fillScreen(BLACK);
-        bmpDraw("reset.bmp", 33, 25);
-        tft.setCursor(32, 3);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1.85);
-        tft.println("Path Reset");
-
-        RenderBattery(voltage);
-        break;
-
-      case 54:
-        tft.fillScreen(BLACK);
-        bmpDraw("shortcut.bmp", 36, 25);
-        tft.setCursor(25, 3);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1.85);
-        tft.println("Shortcut Mode");
-
-        RenderBattery(voltage);
-        break;
 
       case 55:
         tft.fillScreen(BLACK);
@@ -232,58 +177,14 @@ void Icon(int numBytes)
         break;
 
 
-      case 56:                 //ASCII 8
-        tft.fillScreen(BLACK);
-        runthistime = true;
-        bmpDraw("home.bmp", 33, 25);
-        btc = 57;
-        break;
+      case 65:   fillIndicators( RED, RED);     break;
 
-      case 57:
-        targetMode = false;
-        tft.setCursor(30, 03);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1);
-        tft.println("Homing Mode");
-        tft.setCursor(36, 14);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1);
-        tft.println("Tracking");
-        tft.setCursor(0, 87);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1);
-        tft.println("Carrier");
-        tft.setCursor(98, 87);
-        tft.setTextColor(BLUE);
-        tft.setTextSize(1);
-        tft.println("Lock");
-        bmpDraw("carrier.bmp", 0, 100);
-        bmpDraw("lock.bmp", 93, 100);
+      case 66:    fillIndicators( GREEN, GREEN);    break;
 
-        tft.fillCircle(33, 113, 5, RED);
-        tft.fillCircle(120, 113, 5, RED);
-        RenderBattery(voltage);
-        break;
+      case 67:    fillIndicators(GREEN, RED);     break;
+    
+      case 68:    fillIndicators(RED, GREEN);    break;
 
-      case 65:
-        tft.fillCircle(33, 113, 5, RED);
-        tft.fillCircle(120, 113, 5, RED);
-        break;
-
-      case 66:
-        tft.fillCircle(33, 113, 5, GREEN);
-        tft.fillCircle(120, 113, 5, GREEN);
-        break;
-
-      case 67:
-        tft.fillCircle(33, 113, 5, GREEN);
-        tft.fillCircle(120, 113, 5, RED);
-        break;
-
-      case 68:
-        tft.fillCircle(33, 113, 5, RED);
-        tft.fillCircle(120, 113, 5, GREEN);
-        break;
 
       case 69:      //grey circle for deadman
         tft.fillCircle(120, 9, 5, 0x7777);
@@ -301,7 +202,7 @@ void Icon(int numBytes)
         break;
 
       case 72:     //bluetooth off
-      tft.fillScreen(BLACK);
+        tft.fillScreen(BLACK);
         bmpDraw("blue.bmp", 36, 25);
         tft.setCursor(29, 90);
         tft.setTextColor(BLUE);
@@ -309,19 +210,20 @@ void Icon(int numBytes)
         tft.println("No Connection");
         RenderBattery(voltage);
         targetMode = false;
+       // RenderBattery(voltage);
         break;
 
       case 73: //targeting Mode
          if(targetMode == false)  
          {
-          tft.fillRect(10, 10, 105, 105, BLACK);
+          tft.fillRect(10, 0, 118, 128, BLACK);
           tft.drawCircle(64 + xOffset, 74 + yOffset , 32, BLUE);
           tft.drawCircle(64 + xOffset, 74 + yOffset , 33, BLUE);
            tft.setCursor(32 , 3  );
            tft.setTextColor(BLUE);
           tft.setTextSize(1);
           tft.println("Target Mode");
-          RenderBattery(1153);
+          RenderBattery(voltage);
          }
           tft.fillRect(64 + xOffset, 89 + yOffset , 2, 18, BLACK); //horizontal
          tft.fillRect(64 + xOffset, 42 + yOffset , 2, 18, BLACK);
@@ -352,7 +254,7 @@ void Icon(int numBytes)
           tft.setTextSize(1);
           tft.println("Target Mode");
           targetMode = true;
-          RenderBattery(1153);
+          RenderBattery(voltage);
          }
           tft.fillRect(64 + xOffset, 107 + yOffset , 2, 15, BLACK);
          tft.fillRect(64 + xOffset, 26 + yOffset , 2, 15, BLACK);
@@ -371,28 +273,10 @@ void Icon(int numBytes)
            tft.print("Hold MD for Shadow" );
          break;
 
-      case 75:
-         removeTarget('1');
-
-         break;
-
-         case 76:
-
-        removeTarget('2');
-
-         break;
-
-         case 77:
-       
-        removeTarget('3');
-
-         break;
-
-         case 78:
-
-        removeTarget('4');
-
-         break;
+         case 75:         removeTarget('1');         break;
+         case 76:        removeTarget('2');         break;
+         case 77:        removeTarget('3');         break;
+         case 78:        removeTarget('4');         break;
          
       default:
 
@@ -405,12 +289,26 @@ void Icon(int numBytes)
   
 }
 
+void fillIndicators(uint16_t color1, uint16_t color2)
+{
+    tft.fillCircle(33, 113, 5,  color1);
+    tft.fillCircle(120, 113, 5, color2);
+}
+
+void drawTarget(uint16_t color, bool locked)
+{
+     tft.fillCircle(64, 74-10, 7, color);
+       tft.drawCircle(64, 74-10, 32, color);
+          tft.drawCircle(64, 74-10, 33, color);
+  tft.fillRect(64, 89-10, 2, 18, color); //horizontal
+         tft.fillRect(64, 42-10, 2, 18, color);
+         tft.fillRect(79, 74-10, 18, 2, color); //vertical
+         tft.fillRect(32, 74-10, 18, 2, color);
+}
 void removeTarget(char num)
 {
   targetMode = false;
-      tft.fillCircle(64, 74-10, 7, BLACK);
-       tft.drawCircle(64, 74-10, 32, BLACK);
-          tft.drawCircle(64, 74-10, 33, BLACK);
+          drawTarget(BLACK, false);
            tft.setCursor(32, 3);
            tft.setTextColor(BLACK);
           tft.setTextSize(1);
@@ -423,16 +321,13 @@ void removeTarget(char num)
            tft.setCursor(8, 120);
            tft.print("Hold TR+MD to exit" );
            
-               tft.fillRect(64, 89-10, 2, 18, BLACK); //horizontal
-         tft.fillRect(64, 42-10, 2, 18, BLACK);
-         tft.fillRect(79, 74-10, 18, 2, BLACK); //vertical
-         tft.fillRect(32, 74-10, 18, 2, BLACK);
+               
           tft.setCursor(59, 34);
           tft.setTextColor(GREEN);
           tft.setTextSize(2);
           tft.print(num);
            bmpDraw("shadow.bmp", 28, 18);
-           RenderBattery(1153);
+           RenderBattery(voltage);
 }
 
 /////////////////////////////BitMap Drawing Fucntion///////////////////////
@@ -464,38 +359,38 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
 
   if ((x >= tft.width()) || (y >= tft.height())) return;
   startTime = millis();
-  if (debug) Serial.println();
-  if (debug) Serial.print("Loading image '");
-  if (debug) Serial.print(filename);
-  if (debug) Serial.println('\'');
+  Serial.println();
+  Serial.print("Loading image '");
+  Serial.print(filename);
+  Serial.println('\'');
 
   // Open requested file on SD card
   if ((bmpFile = SD.open(filename)) == NULL)
   {
-    if (debug) Serial.print("File not found");
+    Serial.print("File not found");
     return;
   }
 
   // Parse BMP header
   if (read16(bmpFile) == 0x4D42)            // BMP signature
   {
-    if (debug) Serial.print("File size: ");
-    if (debug) Serial.println(read32(bmpFile));
+    Serial.print("File size: ");
+    Serial.println(read32(bmpFile));
     (void)read32(bmpFile);                  // Read & ignore creator bytes
     bmpImageoffset = read32(bmpFile);       // Start of image data
-    if (debug) Serial.print("Image Offset: ");
-    if (debug) Serial.println(bmpImageoffset, DEC);
+    Serial.print("Image Offset: ");
+    Serial.println(bmpImageoffset, DEC);
     // Read DIB header
-    if (debug) Serial.print("Header size: ");
-    if (debug) Serial.println(read32(bmpFile));
+    Serial.print("Header size: ");
+    Serial.println(read32(bmpFile));
     bmpWidth  = read32(bmpFile);
     bmpHeight = read32(bmpFile);
 
     if (read16(bmpFile) == 1)               // # planes -- must be '1'
     {
       bmpDepth = read16(bmpFile);           // bits per pixel
-      if (debug) Serial.print("Bit Depth: ");
-      if (debug) Serial.println(bmpDepth);
+      Serial.print("Bit Depth: ");
+      Serial.println(bmpDepth);
       if ((bmpDepth == 24) && (read32(bmpFile) == 0))   // 0 = uncompressed
       {
         goodBmp = true;                      // Supported BMP format -- proceed!
@@ -560,9 +455,9 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
             }
           } // end pixel
         } // end scanline
-        if (debug) Serial.print("Loaded in ");
-        if (debug) Serial.print(millis() - startTime);
-        if (debug) Serial.println(" ms");
+        Serial.print("Loaded in ");
+        Serial.print(millis() - startTime);
+        Serial.println(" ms");
       }     // end goodBmp
     }
   }
@@ -574,63 +469,21 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
 
 }
 
-//// These read 16- and 32-bit types from the SD card file.
-//// BMP data is stored little-endian, Arduino is little-endian too.
-//// May need to reverse subscript order if porting elsewhere.
-//
-//uint16_t read16(File f)
-//  {
-//    uint16_t result;
-//    ((uint8_t *)&result)[0] = f.read(); // LSB
-//    ((uint8_t *)&result)[1] = f.read(); // MSB
-//    return result;
-//  }
-//
-//uint32_t read32(File f)
-//  {
-//    uint32_t result;
-//    ((uint8_t *)&result)[0] = f.read(); // LSB
-//    ((uint8_t *)&result)[1] = f.read();
-//    ((uint8_t *)&result)[2] = f.read();
-//    ((uint8_t *)&result)[3] = f.read(); // MSB
-//    return result;
-//  }
-//////////////////////////////////
-//
-
-
-
-
 
 
 /////////////////////Battery Checking Function//////////////////////////////
 
 int getBandgap(void) // Returns actual value of Vcc (x 100)
 {
-  // For 168/328 boards
-  const long InternalReferenceVoltage = 1306L;  // Adjust this value to your boards specific internal BG voltage x1000 //updated 5/9/2017 to reflect current board
-  // REFS1 REFS0          --> 0 1, AVcc internal ref. -Selects AVcc external reference
-  //MUX3 MUX2 MUX1 MUX0  --> 1110 1.1V (VBG)         -Selects channel 14, bandgap voltage, to measure
-  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-  //  #endif
-
-  delay(2); // Wait for Vref to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA, ADSC)); // measuring
-
-  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH
-  uint8_t high = ADCH; // unlocks both
-
-  long result = (high << 8) | low;
-
-  result = 1125300L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+  long result;
+  result = analogRead(volts); 
   return result;
 }
 
 void Battery(void)
 {
-  voltage = 10000;
-  //RenderBattery(voltage);
+  voltage = getBandgap();
+  RenderBattery(voltage);
   if (debug) Serial.print("VOLTAGE: ");
   if (debug) Serial.println(voltage);
 }
@@ -648,12 +501,20 @@ void RenderBattery(int voltage)
   tft.fillRect(x + 2  , y + 5    , 6  , 4  , GREEN);
 
 
-  if (voltage < 385)
+  if (voltage < 620 )
   {
-    tft.fillRect(x + 2, y + 4, 6,  (( 3120 - voltage) / 12), BLACK);
+    
+     //tft.setCursor(14, 0);
+     //      tft.setTextColor(BLUE);
+      //     tft.setTextSize(1);
+     //       if(voltage < 524) voltage = 523;
+     //      tft.println(100-(624-voltage));
+           tft.fillRect(x + 2, y + 4, 6, (( 620 - voltage) / 5), BLACK);
   }
+ 
 
 
+           
   tft.drawLine((x + 0), (y + 4), (x + 3), (y + 4), BLUE);
   tft.drawLine((x + 3), (y + 4), (x + 3), (y + 2), BLUE);
   tft.drawLine((x + 3), (y + 2), (x + 7), (y + 2), BLUE);
@@ -663,10 +524,7 @@ void RenderBattery(int voltage)
   tft.drawLine((x + 10), (y + 20), (x + 0), (y + 20), BLUE);
   tft.drawLine((x + 0), (y + 20), (x + 0), (y + 4), BLUE);
 
-  // tft.setCursor(14, 0);
-  //         tft.setTextColor(BLUE);
-  //         tft.setTextSize(1);
-  //         tft.println(voltage);
+  
 }
 
 
